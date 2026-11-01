@@ -82,4 +82,25 @@ public class Prescription {
         }
         this.status = value;
     }
+
+    public boolean isApproved() {
+        return APPROVED.equals(status);
+    }
+
+    public void approve() {
+        ensurePending();
+        status = APPROVED;
+        verifiedOn = LocalDate.now();
+    }
+
+    public void reject() {
+        ensurePending();
+        status = REJECTED;
+    }
+
+    private void ensurePending() {
+        if (!PENDING.equals(status)) {
+            throw new IllegalStateException("Only a pending prescription can be verified");
+        }
+    }
 }

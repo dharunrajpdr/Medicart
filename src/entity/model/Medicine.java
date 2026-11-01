@@ -25,6 +25,26 @@ public abstract class Medicine {
 
     public abstract boolean isPrescriptionRequired();
 
+    public boolean isExpired() {
+        return getExpiryDate().isBefore(LocalDate.now());
+    }
+
+    public boolean isNearExpiry(int days) {
+        if (days < 0) {
+            throw new IllegalArgumentException("days cannot be negative");
+        }
+        LocalDate today = LocalDate.now();
+        return !isExpired() && !getExpiryDate().isAfter(today.plusDays(days));
+    }
+
+    public abstract void addToCart();
+
+    protected final void ensureNotExpired() {
+        if (isExpired()) {
+            throw new IllegalStateException("Expired medicine cannot be added to cart");
+        }
+    }
+
     public int getMedicineId() {
         return medicineId;
     }

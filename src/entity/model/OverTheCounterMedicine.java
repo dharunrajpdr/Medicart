@@ -16,4 +16,9 @@ public class OverTheCounterMedicine extends Medicine {
     public boolean isPrescriptionRequired() {
         return false;
     }
+
+    @Override
+    public void addToCart() {
+        ensureNotExpired();
+    }
 }

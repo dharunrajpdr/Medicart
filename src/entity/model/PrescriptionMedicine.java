@@ -27,4 +27,13 @@ public class PrescriptionMedicine extends Medicine {
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
+
+    @Override
+    public void addToCart() {
+        ensureNotExpired();
+        if (prescription == null || !prescription.isApproved()) {
+            throw new IllegalStateException(
+                    "An approved prescription is required to add this medicine to cart");
+        }
+    }
 }
