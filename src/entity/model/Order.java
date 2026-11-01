@@ -87,6 +87,16 @@ public class Order {
         String value = ModelValidation.requiredText(status, "status", 20);
         for (String validStatus : VALID_STATUSES) {
             if (validStatus.equals(value)) {
+                if ("Shipped".equals(value)) {
+                    if (containsExpiredMedicine()) {
+                        throw new IllegalStateException(
+                                "An order containing expired medicine cannot be shipped");
+                    }
+                    if (!canShip()) {
+                        throw new IllegalStateException(
+                                "An order with prescription medicine needs an approved prescription before shipping");
+                    }
+                }
                 this.status = value;
                 return;
             }
@@ -100,5 +110,81 @@ public class Order {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = ModelValidation.nonNegativeAmount(totalAmount, "totalAmount");
+    }
+
+    public void checkout() {
+        if (items.isEmpty()) {
+            throw new IllegalStateException("An order must contain at least one medicine");
+        }
+
+        BigDecimal calculatedTotal = BigDecimal.ZERO;
+        boolean prescriptionPending = false;
+        for (Medicine item : items) {
+            if (item.isExpired()) {
+                throw new IllegalStateException("Expired medicine cannot be ordered: " + item.getName());
+            }
+            calculatedTotal = calculatedTotal.add(item.getPrice());
+            if (item.isPrescriptionRequired() && !hasApprovedPrescription(item)) {
+                prescriptionPending = true;
+            }
+        }
+
+        setTotalAmount(calculatedTotal);
+        if (prescriptionPending) {
+            holdForVerification();
+        } else {
+            setStatus("Placed");
+        }
+    }
+
+    public void holdForVerification() {
+        boolean hasPrescriptionMedicine = false;
+        for (Medicine item : items) {
+            if (item.isPrescriptionRequired()) {
+                hasPrescriptionMedicine = true;
+                break;
+            }
+        }
+        if (!hasPrescriptionMedicine) {
+            throw new IllegalStateException(
+                    "Only an order containing prescription medicine can be held for verification");
+        }
+        setStatus("Pending Verification");
+    }
+
+    private boolean canShip() {
+        for (Medicine item : items) {
+            if (item.isPrescriptionRequired() && !hasApprovedPrescription(item)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean containsExpiredMedicine() {
+        for (Medicine item : items) {
+            if (item.isExpired()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasApprovedPrescription(Medicine item) {
+        Prescription requiredPrescription = prescription;
+        if (item instanceof PrescriptionMedicine) {
+            Prescription itemPrescription = ((PrescriptionMedicine) item).getPrescription();
+            if (itemPrescription != null) {
+                requiredPrescription = itemPrescription;
+            }
+        }
+        if (requiredPrescription == null || !requiredPrescription.isApproved()) {
+            return false;
+        }
+        Customer prescriptionCustomer = requiredPrescription.getCustomer();
+        return customer != null && prescriptionCustomer != null
+                && (customer == prescriptionCustomer
+                || customer.getCustomerId() > 0
+                && customer.getCustomerId() == prescriptionCustomer.getCustomerId());
     }
 }

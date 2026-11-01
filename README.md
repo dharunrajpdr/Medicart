@@ -2,7 +2,7 @@
 
 ## Project Status
 
-This repository is in Phase 3 of the MediCart online pharmacy case study. The Phase 1 foundation, Phase 2 MySQL schema, and Phase 3 entity models are prepared. Service workflows and application behavior are deferred to their approved phases. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
+This repository is in Phase 4 of the MediCart online pharmacy case study. The Phase 1 foundation, Phase 2 MySQL schema, Phase 3 entity models, and Phase 4 domain behavior are prepared. Service and application workflows are deferred to their approved phases. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
 
 ## Project Overview
 Wellstone Pharmacy Network operates an online storefront for prescription and over-the-counter medicines, fulfilled by three regional warehouses. The system must support customer management, medicine catalog management, prescription verification, stock tracking, order processing, reporting, and concurrent operations.
@@ -138,8 +138,8 @@ MediCart/
 └── .gitkeep (optional placeholder files in empty folders)
 ```
 
-## Phase 3 Status
-The entity layer is implemented under `src/entity/model` with Java package `entity.model`.
+## Phase 4 Status
+The entity layer and its domain behaviors are implemented under `src/entity/model` with Java package `entity.model`.
 
 Current status:
 - Requirement analysis complete
@@ -149,15 +149,19 @@ Current status:
 - Sample data added in `database/sample_data.sql`
 - Entity models implemented for customer, medicine variants, prescription, warehouse, stock, and order
 - Entity validation covers required text, identifiers, non-negative amounts and quantities, status values, and defensive collection copies
-- Domain workflows such as checkout, prescription approval, and stock reservation remain for Phase 4
+- Domain behavior includes expiry checks, prescription approval/rejection, stock reservation/release, cart validation, and order checkout holds
+- Executable domain behavior checks are under `test/entity`; run them with `javac -d bin src\entity\model\*.java test\entity\DomainBehaviorChecks.java` followed by `java -cp bin entity.DomainBehaviorChecks`
+- Order totals sum one medicine price per entry in `Order.Items`; item quantities are not defined by the case study
+- Domain-specific exception classes remain for Phase 5
 
 ## Phase-to-Branch Mapping
 - feature/phase-01-foundation
 - feature/phase-02-database
 - feature/phase-03-entities
+- feature/phase-04-domain-logic
 
 ## Current Branch
-The repository is currently on the `feature/phase-03-entities` branch.
+The repository is currently on the `feature/phase-04-domain-logic` branch.
 
 ## Database Summary
 The implemented schema includes:
