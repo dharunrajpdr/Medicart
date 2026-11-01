@@ -1,5 +1,13 @@
-package entity.model;
+package entity;
 
+import entity.model.Customer;
+import entity.model.Medicine;
+import entity.model.Order;
+import entity.model.OverTheCounterMedicine;
+import entity.model.Prescription;
+import entity.model.PrescriptionMedicine;
+import entity.model.Stock;
+import entity.model.Warehouse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

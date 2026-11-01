@@ -150,7 +150,7 @@ Current status:
 - Entity models implemented for customer, medicine variants, prescription, warehouse, stock, and order
 - Entity validation covers required text, identifiers, non-negative amounts and quantities, status values, and defensive collection copies
 - Domain behavior includes expiry checks, prescription approval/rejection, stock reservation/release, cart validation, and order checkout holds
-- Executable domain behavior checks are under `test/entity`; run them with `javac -d bin src\entity\model\*.java test\entity\DomainBehaviorChecks.java` followed by `java -cp bin entity.model.DomainBehaviorChecks`
+- Executable domain behavior checks are under `test/entity`; run them with `javac -d bin src\entity\model\*.java test\entity\DomainBehaviorChecks.java` followed by `java -cp bin entity.DomainBehaviorChecks`
 - Order totals sum one medicine price per entry in `Order.Items`; item quantities are not defined by the case study
 - Domain-specific exception classes remain for Phase 5
 
