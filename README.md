@@ -1,8 +1,8 @@
 # MediCart – Online Pharmacy System
 
-## Phase 1 – Requirement Analysis and Project Foundation
+## Project Status
 
-This repository is being prepared for the MediCart online pharmacy case study in Java. The project is currently in the Phase 1 foundation stage and does not contain application business logic yet. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
+This repository is in Phase 3 of the MediCart online pharmacy case study. The Phase 1 foundation, Phase 2 MySQL schema, and Phase 3 entity models are prepared. Service workflows and application behavior are deferred to their approved phases. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
 
 ## Project Overview
 Wellstone Pharmacy Network operates an online storefront for prescription and over-the-counter medicines, fulfilled by three regional warehouses. The system must support customer management, medicine catalog management, prescription verification, stock tracking, order processing, reporting, and concurrent operations.
@@ -138,8 +138,8 @@ MediCart/
 └── .gitkeep (optional placeholder files in empty folders)
 ```
 
-## Phase 2 Status
-The database layer has been implemented in the official MySQL schema.
+## Phase 3 Status
+The entity layer is implemented under `src/entity/model` with Java package `entity.model`.
 
 Current status:
 - Requirement analysis complete
@@ -147,14 +147,17 @@ Current status:
 - Project structure created
 - Database schema implemented in `database/schema.sql`
 - Sample data added in `database/sample_data.sql`
-- This phase is the database design and implementation stage for the MediCart case study
+- Entity models implemented for customer, medicine variants, prescription, warehouse, stock, and order
+- Entity validation covers required text, identifiers, non-negative amounts and quantities, status values, and defensive collection copies
+- Domain workflows such as checkout, prescription approval, and stock reservation remain for Phase 4
 
 ## Phase-to-Branch Mapping
 - feature/phase-01-foundation
 - feature/phase-02-database
+- feature/phase-03-entities
 
 ## Current Branch
-The repository is currently on the `feature/phase-02-database` branch.
+The repository is currently on the `feature/phase-03-entities` branch.
 
 ## Database Summary
 The implemented schema includes:
@@ -166,3 +169,8 @@ The implemented schema includes:
 - Order
 
 The schema enforces primary keys, foreign keys, unique constraints, checks, defaults, and indexes to reflect the case study requirements.
+
+## Entity Modeling Notes
+- `Medicine` is abstract; prescription requirement is represented by its OTC/prescription subtype.
+- Foreign-key relationships are modeled with entity references where applicable.
+- `Order.Items` is currently a `List<Medicine>` as approved; item quantities and order-item persistence are not modeled because the case study does not define an OrderItem entity or table.
