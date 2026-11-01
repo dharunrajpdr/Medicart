@@ -1,0 +1,3 @@
+-- Phase 2 sample data placeholder for the MediCart case study.
+-- Insert representative test data for customers, medicines, warehouses,
+-- stock, prescriptions, and orders after the schema is finalized.

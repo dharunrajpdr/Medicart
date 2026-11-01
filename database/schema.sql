@@ -1,0 +1,4 @@
+-- Phase 2 database schema implementation placeholder.
+-- Official MediCart case study tables to be implemented in this file:
+-- Customer, Medicine, Warehouse, Stock, Prescription, Order
+-- Add the final SQL table definitions after requirement validation.
