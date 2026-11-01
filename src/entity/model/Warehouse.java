@@ -57,4 +57,36 @@ public class Warehouse {
         }
         this.stock = new ArrayList<>(stock);
     }
+
+    public void reserveStock(Medicine medicine, int quantity) {
+        Objects.requireNonNull(medicine, "medicine cannot be null");
+        requirePositiveQuantity(quantity);
+        Stock item = findStock(medicine);
+        if (item.getQuantityAvailable() < quantity) {
+            throw new IllegalStateException("Insufficient stock for " + medicine.getName());
+        }
+        item.setQuantityAvailable(item.getQuantityAvailable() - quantity);
+    }
+
+    public void releaseStock(Medicine medicine, int quantity) {
+        Objects.requireNonNull(medicine, "medicine cannot be null");
+        requirePositiveQuantity(quantity);
+        Stock item = findStock(medicine);
+        item.setQuantityAvailable(Math.addExact(item.getQuantityAvailable(), quantity));
+    }
+
+    private Stock findStock(Medicine medicine) {
+        for (Stock item : stock) {
+            if (item.getMedicine().getMedicineId() == medicine.getMedicineId()) {
+                return item;
+            }
+        }
+        throw new IllegalArgumentException("Medicine is not stocked at this warehouse");
+    }
+
+    private static void requirePositiveQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+    }
 }
