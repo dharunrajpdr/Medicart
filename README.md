@@ -138,21 +138,31 @@ MediCart/
 └── .gitkeep (optional placeholder files in empty folders)
 ```
 
-## Phase 1 Status
-The repository has been prepared for the official case study.
+## Phase 2 Status
+The database layer has been implemented in the official MySQL schema.
 
 Current status:
 - Requirement analysis complete
 - Architecture plan documented
-- Project directory structure created
-- No production application code has been implemented yet
-- Waiting for further implementation phases to be approved in sequence
+- Project structure created
+- Database schema implemented in `database/schema.sql`
+- Sample data added in `database/sample_data.sql`
+- This phase is the database design and implementation stage for the MediCart case study
 
 ## Phase-to-Branch Mapping
 - feature/phase-01-foundation
+- feature/phase-02-database
 
 ## Current Branch
-The repository is currently on the `feature/phase-01-foundation` branch.
+The repository is currently on the `feature/phase-02-database` branch.
 
-## Next Step
-Proceed to Phase 2 only after completing the established approval flow for the current phase and reviewing the project foundation artifacts.
+## Database Summary
+The implemented schema includes:
+- Customer
+- Warehouse
+- Medicine
+- Stock
+- Prescription
+- Order
+
+The schema enforces primary keys, foreign keys, unique constraints, checks, defaults, and indexes to reflect the case study requirements.
