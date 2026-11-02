@@ -135,7 +135,6 @@ MediCart/
 ├── .gitignore
 ├── .classpath
 ├── .project
-└── .gitkeep (optional placeholder files in empty folders)
 ```
 
 ## Phase 5 Status
@@ -150,12 +149,21 @@ Current status:
 - Entity models implemented for customer, medicine variants, prescription, warehouse, stock, and order
 - Entity validation covers required text, identifiers, non-negative amounts and quantities, status values, and defensive collection copies
 - Domain behavior includes expiry checks, prescription approval/rejection, stock reservation/release, cart validation, and order checkout holds
-- Executable domain behavior checks are under `test/entity`; run them with `javac -d bin src\entity\model\*.java test\entity\DomainBehaviorChecks.java` followed by `java -cp bin entity.DomainBehaviorChecks`
+- Executable domain behavior checks are under `test/entity`.
 - All six service contracts define their CRUD methods and relevant domain-operation signatures
 - Custom checked exceptions provide default, message, and message/cause constructors
-- Contract checks are under `test/dao`; run with `java -cp bin dao.ServiceContractChecks` after compilation
+- Contract checks are under `test/dao`.
 - Order totals sum one medicine price per entry in `Order.Items`; item quantities are not defined by the case study
 - `WarehouseCapacityException` is defined, but no service operation declares it because the official schema/model specifies no warehouse capacity field or limit
+
+Compile and run the standalone checks from PowerShell:
+
+```powershell
+$javaFiles = Get-ChildItem -Recurse src,test -Filter *.java | ForEach-Object { $_.FullName }
+javac -Xlint:all -Werror -d bin $javaFiles
+java -cp bin dao.ServiceContractChecks
+java -cp bin entity.DomainBehaviorChecks
+```
 
 ## Phase-to-Branch Mapping
 - feature/phase-01-foundation
