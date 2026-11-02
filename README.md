@@ -2,7 +2,7 @@
 
 ## Project Status
 
-This repository is in Phase 4 of the MediCart online pharmacy case study. The Phase 1 foundation, Phase 2 MySQL schema, Phase 3 entity models, and Phase 4 domain behavior are prepared. Service and application workflows are deferred to their approved phases. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
+This repository is in Phase 5 of the MediCart online pharmacy case study. The Phase 1 foundation, Phase 2 MySQL schema, Phase 3 entity models, Phase 4 domain behavior, and Phase 5 service contracts are prepared. Service implementations and application workflows are deferred to their approved phases. The official case study is treated as the source of truth for requirements, naming, layered architecture, and sprint progression.
 
 ## Project Overview
 Wellstone Pharmacy Network operates an online storefront for prescription and over-the-counter medicines, fulfilled by three regional warehouses. The system must support customer management, medicine catalog management, prescription verification, stock tracking, order processing, reporting, and concurrent operations.
@@ -138,8 +138,8 @@ MediCart/
 └── .gitkeep (optional placeholder files in empty folders)
 ```
 
-## Phase 4 Status
-The entity layer and its domain behaviors are implemented under `src/entity/model` with Java package `entity.model`.
+## Phase 5 Status
+The six service interfaces are defined under `src/dao` and the seven checked domain exceptions under `src/exception`.
 
 Current status:
 - Requirement analysis complete
@@ -151,17 +151,21 @@ Current status:
 - Entity validation covers required text, identifiers, non-negative amounts and quantities, status values, and defensive collection copies
 - Domain behavior includes expiry checks, prescription approval/rejection, stock reservation/release, cart validation, and order checkout holds
 - Executable domain behavior checks are under `test/entity`; run them with `javac -d bin src\entity\model\*.java test\entity\DomainBehaviorChecks.java` followed by `java -cp bin entity.DomainBehaviorChecks`
+- All six service contracts define their CRUD methods and relevant domain-operation signatures
+- Custom checked exceptions provide default, message, and message/cause constructors
+- Contract checks are under `test/dao`; run with `java -cp bin dao.ServiceContractChecks` after compilation
 - Order totals sum one medicine price per entry in `Order.Items`; item quantities are not defined by the case study
-- Domain-specific exception classes remain for Phase 5
+- `WarehouseCapacityException` is defined, but no service operation declares it because the official schema/model specifies no warehouse capacity field or limit
 
 ## Phase-to-Branch Mapping
 - feature/phase-01-foundation
 - feature/phase-02-database
 - feature/phase-03-entities
 - feature/phase-04-domain-logic
+- feature/phase-05-contracts
 
 ## Current Branch
-The repository is currently on the `feature/phase-04-domain-logic` branch.
+The repository is currently on the `feature/phase-05-contracts` branch.
 
 ## Database Summary
 The implemented schema includes:
