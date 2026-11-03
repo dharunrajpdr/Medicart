@@ -22,7 +22,6 @@ public class WarehouseService implements IWarehouseService {
     @Override
     public void addWarehouse(Warehouse warehouse) {
         validateWarehouse(warehouse);
-        ensureUniqueName(warehouse, 0);
         warehouses.add(warehouse, Warehouse::getWarehouseId, Warehouse::setWarehouseId);
     }
 
@@ -33,7 +32,6 @@ public class WarehouseService implements IWarehouseService {
             throw new IllegalArgumentException(
                     "Warehouse does not exist: " + warehouse.getWarehouseId());
         }
-        ensureUniqueName(warehouse, warehouse.getWarehouseId());
         warehouses.update(warehouse, Warehouse::getWarehouseId);
     }
 
@@ -75,15 +73,6 @@ public class WarehouseService implements IWarehouseService {
                     "Warehouse does not exist: " + warehouse.getWarehouseId());
         }
         return stored;
-    }
-
-    private void ensureUniqueName(Warehouse candidate, int excludedWarehouseId) {
-        for (Warehouse existing : warehouses.getAll()) {
-            if (existing.getWarehouseId() != excludedWarehouseId
-                    && existing.getWarehouseName().equalsIgnoreCase(candidate.getWarehouseName())) {
-                throw new IllegalArgumentException("Warehouse name already exists");
-            }
-        }
     }
 
     private static void validateWarehouse(Warehouse warehouse) {

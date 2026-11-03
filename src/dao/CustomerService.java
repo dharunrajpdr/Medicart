@@ -48,9 +48,14 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public void deleteCustomer(int customerId) {
-        if (!customers.delete(customerId)) {
+        Customer customer = customers.get(customerId);
+        if (customer == null) {
             throw new IllegalArgumentException("Customer does not exist: " + customerId);
         }
+        if (!customer.getOrders().isEmpty() || hasPrescriptions(customerId)) {
+            throw new IllegalStateException("Customer has related orders or prescriptions");
+        }
+        customers.delete(customerId);
     }
 
     @Override
@@ -85,5 +90,14 @@ public class CustomerService implements ICustomerService {
                 throw new IllegalArgumentException("Customer email already exists");
             }
         }
+    }
+
+    private boolean hasPrescriptions(int customerId) {
+        for (Prescription prescription : prescriptionService.getAllPrescriptions()) {
+            if (prescription.getCustomer().getCustomerId() == customerId) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -30,6 +30,16 @@ public class PrescriptionService implements IPrescriptionService {
     @Override
     public void updatePrescription(Prescription prescription) {
         validatePrescription(prescription);
+        Prescription existing = prescriptions.get(prescription.getPrescriptionId());
+        if (existing == null) {
+            throw new IllegalArgumentException(
+                    "Prescription does not exist: " + prescription.getPrescriptionId());
+        }
+        if (!"Pending".equals(existing.getStatus())
+                && !existing.getStatus().equals(prescription.getStatus())) {
+            throw new IllegalArgumentException(
+                    "A verified prescription status cannot be changed");
+        }
         prescriptions.update(prescription, Prescription::getPrescriptionId);
     }
 

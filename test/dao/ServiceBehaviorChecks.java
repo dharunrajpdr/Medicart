@@ -62,6 +62,8 @@ public final class ServiceBehaviorChecks {
                 "uploaded prescription is available to prescription service");
         expectThrows(IllegalArgumentException.class,
                 () -> service.uploadPrescription(customer(0, "other@example.com"), prescription));
+        expectThrows(IllegalStateException.class, () -> service.deleteCustomer(1));
+        prescriptions.deletePrescription(prescription.getPrescriptionId());
         service.deleteCustomer(1);
         check(service.getCustomerById(1) == null, "customer deletion");
         expectThrows(IllegalArgumentException.class, () -> service.deleteCustomer(1));
@@ -84,11 +86,22 @@ public final class ServiceBehaviorChecks {
         Order cart = order(0, customer(1, "buyer@example.com"), List.of(), null);
         service.addToCart(otc, cart);
         check(cart.getItems().size() == 1, "OTC item is added to cart");
-        Medicine prescriptionMedicine = new PrescriptionMedicine(
+        PrescriptionMedicine prescriptionMedicine = new PrescriptionMedicine(
                 2, "Prescription Medicine", new BigDecimal("20.00"),
                 LocalDate.now().plusDays(10), 1, null);
         expectThrows(PrescriptionRequiredException.class,
                 () -> service.addToCart(prescriptionMedicine, cart));
+        Prescription approvedPrescription = pendingPrescription(cart.getCustomer());
+        PrescriptionService prescriptionService = new PrescriptionService();
+        prescriptionService.addPrescription(approvedPrescription);
+        prescriptionService.approve(approvedPrescription);
+        cart.setPrescription(approvedPrescription);
+        service.addToCart(prescriptionMedicine, cart);
+        check(prescriptionMedicine.getPrescription() == approvedPrescription,
+                "cart uses the order's approved prescription when medicine has none");
+        Order wrongCustomerCart = order(0, customer(2, "other@example.com"), List.of(), null);
+        expectThrows(PrescriptionRequiredException.class,
+                () -> service.addToCart(prescriptionMedicine, wrongCustomerCart));
         Medicine expired = medicine(3, "Expired", LocalDate.now().minusDays(1), 1);
         expectThrows(ExpiredMedicineException.class, () -> service.addToCart(expired, cart));
         expectThrows(IllegalArgumentException.class, () -> service.deleteMedicine(90));
@@ -105,8 +118,9 @@ public final class ServiceBehaviorChecks {
         check(warehouse.getWarehouseId() == 1, "warehouse ID is assigned");
         check(service.getWarehouseById(1) == warehouse, "warehouse lookup");
         check(service.getAllWarehouses().size() == 1, "warehouse list");
-        expectThrows(IllegalArgumentException.class,
-                () -> service.addWarehouse(new Warehouse(0, "central", "Other", new ArrayList<>())));
+        service.addWarehouse(new Warehouse(0, "central", "Other", new ArrayList<>()));
+        check(service.getAllWarehouses().size() == 2,
+                "warehouse names are not unique unless specified by the schema");
 
         service.reserveStock(warehouse, medicine, 3);
         check(warehouse.getStock().get(0).getQuantityAvailable() == 2,
@@ -121,6 +135,7 @@ public final class ServiceBehaviorChecks {
         service.updateWarehouse(warehouse);
         service.deleteWarehouse(1);
         check(service.getWarehouseById(1) == null, "warehouse deletion");
+        service.deleteWarehouse(2);
     }
 
     private static void checkStockService() {
@@ -156,6 +171,10 @@ public final class ServiceBehaviorChecks {
         check(prescription.getVerifiedOn() != null, "approval date is recorded");
         expectThrows(PrescriptionAlreadyVerifiedException.class,
                 () -> service.approve(prescription));
+        Prescription resetPrescription = new Prescription(prescription.getPrescriptionId(),
+                customer, prescription.getDocumentPath(), null, null, "Pending");
+        expectThrows(IllegalArgumentException.class,
+                () -> service.updatePrescription(resetPrescription));
 
         Prescription rejected = pendingPrescription(customer);
         service.addPrescription(rejected);

@@ -1,5 +1,6 @@
 package dao;
 
+import entity.model.Customer;
 import entity.model.Medicine;
 import entity.model.Order;
 import entity.model.Prescription;
@@ -70,17 +71,36 @@ public class MedicineService implements IMedicineService {
             throw new ExpiredMedicineException("Expired medicine cannot be added to an order");
         }
         if (medicine.isPrescriptionRequired()) {
-            Prescription prescription = ((PrescriptionMedicine) medicine).getPrescription();
-            if (prescription == null || !prescription.isApproved()) {
+            if (!(medicine instanceof PrescriptionMedicine)) {
                 throw new PrescriptionRequiredException(
-                        "An approved prescription is required for " + medicine.getName());
+                        "Prescription medicines must provide a prescription");
             }
+            PrescriptionMedicine prescriptionMedicine = (PrescriptionMedicine) medicine;
+            Prescription prescription = prescriptionMedicine.getPrescription();
+            if (prescription == null) {
+                prescription = order.getPrescription();
+            }
+            if (prescription == null || !prescription.isApproved()
+                    || !belongsToOrderCustomer(prescription, order.getCustomer())) {
+                throw new PrescriptionRequiredException(
+                        "An approved prescription for the order customer is required for "
+                                + medicine.getName());
+            }
+            prescriptionMedicine.setPrescription(prescription);
         }
 
         medicine.addToCart();
         List<Medicine> items = new ArrayList<>(order.getItems());
         items.add(medicine);
         order.setItems(items);
+    }
+
+    private static boolean belongsToOrderCustomer(Prescription prescription, Customer customer) {
+        Customer prescriptionCustomer = prescription.getCustomer();
+        return prescriptionCustomer != null && customer != null
+                && (prescriptionCustomer == customer
+                || prescriptionCustomer.getCustomerId() > 0
+                && prescriptionCustomer.getCustomerId() == customer.getCustomerId());
     }
 
     private static void validateMedicine(Medicine medicine)
