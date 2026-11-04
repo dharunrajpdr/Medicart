@@ -26,9 +26,9 @@ INSERT INTO Stock (MedicineID, WarehouseID, QuantityAvailable) VALUES
 (5, 2, 22),
 (6, 3, 80);
 
-INSERT INTO Prescription (CustomerID, DocumentPath, VerifiedBy, VerifiedOn, Status) VALUES
-(2, '/prescriptions/nisha_2026_01.pdf', 101, '2026-01-12', 'Approved'),
-(4, '/prescriptions/meera_2026_02.pdf', 102, '2026-02-10', 'Pending');
+INSERT INTO Prescription (CustomerID, DocumentPath, UploadedOn, VerifiedBy, VerifiedOn, Status) VALUES
+(2, '/prescriptions/nisha_2026_01.pdf', '2026-01-12 08:15:00', 101, '2026-01-12', 'Approved'),
+(4, '/prescriptions/meera_2026_02.pdf', '2026-02-10 10:30:00', 102, '2026-02-10', 'Pending');
 
 INSERT INTO `Order` (CustomerID, OrderDate, PrescriptionID, Status, TotalAmount) VALUES
 (1, '2026-01-08 09:30:00', NULL, 'Completed', 90.00),

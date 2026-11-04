@@ -50,6 +50,7 @@ CREATE TABLE Prescription (
     PrescriptionID INT NOT NULL AUTO_INCREMENT,
     CustomerID INT NOT NULL,
     DocumentPath VARCHAR(200) NOT NULL,
+    UploadedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     VerifiedBy INT NULL,
     VerifiedOn DATE NULL,
     Status VARCHAR(20) NOT NULL DEFAULT 'Pending',
