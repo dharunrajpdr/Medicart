@@ -1,6 +1,7 @@
 package entity.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Prescription {
@@ -11,6 +12,7 @@ public class Prescription {
     private int prescriptionId;
     private Customer customer;
     private String documentPath;
+    private LocalDateTime uploadedOn = LocalDateTime.now();
     private Integer verifiedBy;
     private LocalDate verifiedOn;
     private String status = PENDING;
@@ -20,9 +22,16 @@ public class Prescription {
 
     public Prescription(int prescriptionId, Customer customer, String documentPath,
             Integer verifiedBy, LocalDate verifiedOn, String status) {
+        this(prescriptionId, customer, documentPath, verifiedBy, verifiedOn, status,
+                LocalDateTime.now());
+    }
+
+    public Prescription(int prescriptionId, Customer customer, String documentPath,
+            Integer verifiedBy, LocalDate verifiedOn, String status, LocalDateTime uploadedOn) {
         setPrescriptionId(prescriptionId);
         setCustomer(customer);
         setDocumentPath(documentPath);
+        setUploadedOn(uploadedOn);
         setVerifiedBy(verifiedBy);
         setVerifiedOn(verifiedOn);
         setStatus(status);
@@ -50,6 +59,14 @@ public class Prescription {
 
     public void setDocumentPath(String documentPath) {
         this.documentPath = ModelValidation.requiredText(documentPath, "documentPath", 200);
+    }
+
+    public LocalDateTime getUploadedOn() {
+        return uploadedOn;
+    }
+
+    public void setUploadedOn(LocalDateTime uploadedOn) {
+        this.uploadedOn = Objects.requireNonNull(uploadedOn, "uploadedOn cannot be null");
     }
 
     public Integer getVerifiedBy() {
