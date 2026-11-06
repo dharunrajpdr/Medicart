@@ -26,7 +26,7 @@ public class MedicineService implements IMedicineService {
     }
 
     @Override
-    public void addMedicine(Medicine medicine) throws InvalidMedicineDataException {
+    public synchronized void addMedicine(Medicine medicine) throws InvalidMedicineDataException {
         validateMedicine(medicine);
         try {
             medicines.add(medicine, Medicine::getMedicineId, Medicine::setMedicineId);
@@ -36,7 +36,7 @@ public class MedicineService implements IMedicineService {
     }
 
     @Override
-    public void updateMedicine(Medicine medicine) throws InvalidMedicineDataException {
+    public synchronized void updateMedicine(Medicine medicine) throws InvalidMedicineDataException {
         validateMedicine(medicine);
         try {
             medicines.update(medicine, Medicine::getMedicineId);
@@ -46,7 +46,7 @@ public class MedicineService implements IMedicineService {
     }
 
     @Override
-    public void deleteMedicine(int medicineId) {
+    public synchronized void deleteMedicine(int medicineId) {
         if (!medicines.delete(medicineId)) {
             throw new IllegalArgumentException("Medicine does not exist: " + medicineId);
         }

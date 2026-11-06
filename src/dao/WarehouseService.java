@@ -48,7 +48,7 @@ public class WarehouseService implements IWarehouseService {
     }
 
     @Override
-    public void reserveStock(Warehouse warehouse, Medicine medicine, int quantity)
+    public synchronized void reserveStock(Warehouse warehouse, Medicine medicine, int quantity)
             throws InsufficientStockException {
         Warehouse storedWarehouse = requireStoredWarehouse(warehouse);
         Objects.requireNonNull(medicine, "medicine cannot be null");
@@ -60,7 +60,7 @@ public class WarehouseService implements IWarehouseService {
     }
 
     @Override
-    public void releaseStock(Warehouse warehouse, Medicine medicine, int quantity) {
+    public synchronized void releaseStock(Warehouse warehouse, Medicine medicine, int quantity) {
         Warehouse storedWarehouse = requireStoredWarehouse(warehouse);
         storedWarehouse.releaseStock(medicine, quantity);
     }

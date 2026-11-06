@@ -29,14 +29,14 @@ public class CustomerService implements ICustomerService {
     }
 
     @Override
-    public void addCustomer(Customer customer) {
+    public synchronized void addCustomer(Customer customer) {
         validateCustomer(customer);
         ensureEmailAvailable(customer, 0);
         customers.add(customer, Customer::getCustomerId, Customer::setCustomerId);
     }
 
     @Override
-    public void updateCustomer(Customer customer) {
+    public synchronized void updateCustomer(Customer customer) {
         validateCustomer(customer);
         if (!customers.contains(customer.getCustomerId())) {
             throw new IllegalArgumentException(
@@ -47,7 +47,7 @@ public class CustomerService implements ICustomerService {
     }
 
     @Override
-    public void deleteCustomer(int customerId) {
+    public synchronized void deleteCustomer(int customerId) {
         Customer customer = customers.get(customerId);
         if (customer == null) {
             throw new IllegalArgumentException("Customer does not exist: " + customerId);
@@ -59,7 +59,7 @@ public class CustomerService implements ICustomerService {
     }
 
     @Override
-    public void uploadPrescription(Customer customer, Prescription prescription) {
+    public synchronized void uploadPrescription(Customer customer, Prescription prescription) {
         Objects.requireNonNull(customer, "customer cannot be null");
         Objects.requireNonNull(prescription, "prescription cannot be null");
         Customer storedCustomer = customers.get(customer.getCustomerId());

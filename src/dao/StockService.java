@@ -18,14 +18,14 @@ public class StockService implements IStockService {
     }
 
     @Override
-    public void addStock(Stock stock) {
+    public synchronized void addStock(Stock stock) {
         validateStock(stock);
         ensureMedicineWarehouseUnique(stock, 0);
         stocks.add(stock, Stock::getStockId, Stock::setStockId);
     }
 
     @Override
-    public void updateStock(Stock stock) {
+    public synchronized void updateStock(Stock stock) {
         validateStock(stock);
         if (!stocks.contains(stock.getStockId())) {
             throw new IllegalArgumentException("Stock does not exist: " + stock.getStockId());
@@ -35,7 +35,7 @@ public class StockService implements IStockService {
     }
 
     @Override
-    public void deleteStock(int stockId) {
+    public synchronized void deleteStock(int stockId) {
         if (!stocks.delete(stockId)) {
             throw new IllegalArgumentException("Stock does not exist: " + stockId);
         }

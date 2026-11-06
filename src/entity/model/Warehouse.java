@@ -58,7 +58,7 @@ public class Warehouse {
         this.stock = new ArrayList<>(stock);
     }
 
-    public void reserveStock(Medicine medicine, int quantity) {
+    public synchronized void reserveStock(Medicine medicine, int quantity) {
         Objects.requireNonNull(medicine, "medicine cannot be null");
         requirePositiveQuantity(quantity);
         Stock item = findStock(medicine);
@@ -68,7 +68,7 @@ public class Warehouse {
         item.setQuantityAvailable(item.getQuantityAvailable() - quantity);
     }
 
-    public void releaseStock(Medicine medicine, int quantity) {
+    public synchronized void releaseStock(Medicine medicine, int quantity) {
         Objects.requireNonNull(medicine, "medicine cannot be null");
         requirePositiveQuantity(quantity);
         Stock item = findStock(medicine);
