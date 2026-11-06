@@ -35,10 +35,9 @@ public class PrescriptionService implements IPrescriptionService {
             throw new IllegalArgumentException(
                     "Prescription does not exist: " + prescription.getPrescriptionId());
         }
-        if (!"Pending".equals(existing.getStatus())
-                && !existing.getStatus().equals(prescription.getStatus())) {
+        if (!existing.getStatus().equals(prescription.getStatus())) {
             throw new IllegalArgumentException(
-                    "A verified prescription status cannot be changed");
+                    "Prescription status must be changed through approve or reject");
         }
         prescriptions.update(prescription, Prescription::getPrescriptionId);
     }
