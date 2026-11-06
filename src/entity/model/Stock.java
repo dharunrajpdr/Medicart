@@ -42,11 +42,11 @@ public class Stock {
         this.warehouse = Objects.requireNonNull(warehouse, "warehouse cannot be null");
     }
 
-    public int getQuantityAvailable() {
+    public synchronized int getQuantityAvailable() {
         return quantityAvailable;
     }
 
-    public void setQuantityAvailable(int quantityAvailable) {
+    public synchronized void setQuantityAvailable(int quantityAvailable) {
         if (quantityAvailable < 0) {
             throw new IllegalArgumentException("quantityAvailable cannot be negative");
         }

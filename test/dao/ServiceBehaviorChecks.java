@@ -166,6 +166,12 @@ public final class ServiceBehaviorChecks {
         check(prescription.getPrescriptionId() == 1, "prescription ID is assigned");
         check(service.getPrescriptionById(1) == prescription, "prescription lookup");
         check(service.getAllPrescriptions().size() == 1, "prescription list");
+        Prescription unverifiedApproval = new Prescription(prescription.getPrescriptionId(),
+                customer, prescription.getDocumentPath(), null, null, "Approved");
+        expectThrows(IllegalArgumentException.class,
+                () -> service.updatePrescription(unverifiedApproval));
+        check("Pending".equals(service.getPrescriptionById(1).getStatus()),
+                "prescription update cannot bypass approval workflow");
         service.approve(prescription);
         check(prescription.isApproved(), "prescription approval");
         check(prescription.getVerifiedOn() != null, "approval date is recorded");

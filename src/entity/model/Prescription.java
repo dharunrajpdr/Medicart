@@ -88,7 +88,7 @@ public class Prescription {
         this.verifiedOn = verifiedOn;
     }
 
-    public String getStatus() {
+    public synchronized String getStatus() {
         return status;
     }
 
@@ -100,17 +100,17 @@ public class Prescription {
         this.status = value;
     }
 
-    public boolean isApproved() {
+    public synchronized boolean isApproved() {
         return APPROVED.equals(status);
     }
 
-    public void approve() {
+    public synchronized void approve() {
         ensurePending();
         status = APPROVED;
         verifiedOn = LocalDate.now();
     }
 
-    public void reject() {
+    public synchronized void reject() {
         ensurePending();
         status = REJECTED;
     }

@@ -21,30 +21,29 @@ public class PrescriptionService implements IPrescriptionService {
     }
 
     @Override
-    public void addPrescription(Prescription prescription) {
+    public synchronized void addPrescription(Prescription prescription) {
         validatePrescription(prescription);
         prescriptions.add(prescription,
                 Prescription::getPrescriptionId, Prescription::setPrescriptionId);
     }
 
     @Override
-    public void updatePrescription(Prescription prescription) {
+    public synchronized void updatePrescription(Prescription prescription) {
         validatePrescription(prescription);
         Prescription existing = prescriptions.get(prescription.getPrescriptionId());
         if (existing == null) {
             throw new IllegalArgumentException(
                     "Prescription does not exist: " + prescription.getPrescriptionId());
         }
-        if (!"Pending".equals(existing.getStatus())
-                && !existing.getStatus().equals(prescription.getStatus())) {
+        if (!existing.getStatus().equals(prescription.getStatus())) {
             throw new IllegalArgumentException(
-                    "A verified prescription status cannot be changed");
+                    "Prescription status must be changed through approve or reject");
         }
         prescriptions.update(prescription, Prescription::getPrescriptionId);
     }
 
     @Override
-    public void deletePrescription(int prescriptionId) {
+    public synchronized void deletePrescription(int prescriptionId) {
         if (!prescriptions.delete(prescriptionId)) {
             throw new IllegalArgumentException(
                     "Prescription does not exist: " + prescriptionId);
@@ -52,7 +51,7 @@ public class PrescriptionService implements IPrescriptionService {
     }
 
     @Override
-    public void approve(Prescription prescription)
+    public synchronized void approve(Prescription prescription)
             throws PrescriptionAlreadyVerifiedException {
         Prescription stored = requirePendingPrescription(prescription);
         try {
@@ -63,7 +62,7 @@ public class PrescriptionService implements IPrescriptionService {
     }
 
     @Override
-    public void reject(Prescription prescription)
+    public synchronized void reject(Prescription prescription)
             throws PrescriptionAlreadyVerifiedException {
         Prescription stored = requirePendingPrescription(prescription);
         try {
@@ -74,7 +73,8 @@ public class PrescriptionService implements IPrescriptionService {
     }
 
     @Override
-    public void verifyPrescription(PrescriptionMedicine medicine, Prescription prescription)
+    public synchronized void verifyPrescription(PrescriptionMedicine medicine,
+            Prescription prescription)
             throws PrescriptionRequiredException, PrescriptionAlreadyVerifiedException {
         Objects.requireNonNull(medicine, "medicine cannot be null");
         if (prescription == null) {

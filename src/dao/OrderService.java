@@ -26,13 +26,13 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void addOrder(Order order) {
+    public synchronized void addOrder(Order order) {
         validateOrder(order);
         orders.add(order, Order::getOrderId, Order::setOrderId);
     }
 
     @Override
-    public void updateOrder(Order order) throws OrderNotFoundException {
+    public synchronized void updateOrder(Order order) throws OrderNotFoundException {
         validateOrder(order);
         if (!orders.contains(order.getOrderId())) {
             throw new OrderNotFoundException("Order does not exist: " + order.getOrderId());
@@ -41,14 +41,14 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void deleteOrder(int orderId) throws OrderNotFoundException {
+    public synchronized void deleteOrder(int orderId) throws OrderNotFoundException {
         if (!orders.delete(orderId)) {
             throw new OrderNotFoundException("Order does not exist: " + orderId);
         }
     }
 
     @Override
-    public void checkout(Order order)
+    public synchronized void checkout(Order order)
             throws ExpiredMedicineException, PrescriptionRequiredException {
         validateOrder(order);
         for (Medicine medicine : order.getItems()) {
@@ -66,7 +66,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void holdForVerification(Order order) {
+    public synchronized void holdForVerification(Order order) {
         validateOrder(order);
         order.holdForVerification();
         persistWorkflowOrder(order);

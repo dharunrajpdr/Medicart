@@ -12,19 +12,19 @@ final class InMemoryRepository<T> {
     private final Map<Integer, T> records = new LinkedHashMap<>();
     private long nextId = 1;
 
-    T get(int id) {
+    synchronized T get(int id) {
         return records.get(id);
     }
 
-    List<T> getAll() {
+    synchronized List<T> getAll() {
         return new ArrayList<>(records.values());
     }
 
-    boolean contains(int id) {
+    synchronized boolean contains(int id) {
         return records.containsKey(id);
     }
 
-    int add(T record, ToIntFunction<T> idReader, ObjIntConsumer<T> idWriter) {
+    synchronized int add(T record, ToIntFunction<T> idReader, ObjIntConsumer<T> idWriter) {
         Objects.requireNonNull(record, "record cannot be null");
         int id = idReader.applyAsInt(record);
         if (id < 0) {
@@ -46,7 +46,7 @@ final class InMemoryRepository<T> {
         return id;
     }
 
-    void update(T record, ToIntFunction<T> idReader) {
+    synchronized void update(T record, ToIntFunction<T> idReader) {
         Objects.requireNonNull(record, "record cannot be null");
         int id = idReader.applyAsInt(record);
         if (id <= 0 || !records.containsKey(id)) {
@@ -55,7 +55,7 @@ final class InMemoryRepository<T> {
         records.put(id, record);
     }
 
-    boolean delete(int id) {
+    synchronized boolean delete(int id) {
         return records.remove(id) != null;
     }
 }
