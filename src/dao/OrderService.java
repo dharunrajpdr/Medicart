@@ -10,10 +10,19 @@ import java.util.Objects;
 
 public class OrderService implements IOrderService {
     private final InMemoryRepository<Order> orders = new InMemoryRepository<>();
+    private final IOrderDao orderDao;
+
+    public OrderService() {
+        this(null);
+    }
+
+    public OrderService(IOrderDao orderDao) {
+        this.orderDao = orderDao;
+    }
 
     @Override
     public Order getOrderById(int orderId) throws OrderNotFoundException {
-        Order order = orders.get(orderId);
+        Order order = orderDao == null ? orders.get(orderId) : orderDao.findById(orderId);
         if (order == null) {
             throw new OrderNotFoundException("Order does not exist: " + orderId);
         }
@@ -22,18 +31,29 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<Order> getAllOrders() {
-        return orders.getAll();
+        return orderDao == null ? orders.getAll() : orderDao.findAll();
     }
 
     @Override
     public synchronized void addOrder(Order order) {
         validateOrder(order);
+        if (orderDao != null) {
+            orderDao.insert(order);
+            return;
+        }
         orders.add(order, Order::getOrderId, Order::setOrderId);
     }
 
     @Override
     public synchronized void updateOrder(Order order) throws OrderNotFoundException {
         validateOrder(order);
+        if (orderDao != null) {
+            if (orderDao.findById(order.getOrderId()) == null) {
+                throw new OrderNotFoundException("Order does not exist: " + order.getOrderId());
+            }
+            orderDao.update(order);
+            return;
+        }
         if (!orders.contains(order.getOrderId())) {
             throw new OrderNotFoundException("Order does not exist: " + order.getOrderId());
         }
@@ -42,6 +62,13 @@ public class OrderService implements IOrderService {
 
     @Override
     public synchronized void deleteOrder(int orderId) throws OrderNotFoundException {
+        if (orderDao != null) {
+            if (orderDao.findById(orderId) == null) {
+                throw new OrderNotFoundException("Order does not exist: " + orderId);
+            }
+            orderDao.delete(orderId);
+            return;
+        }
         if (!orders.delete(orderId)) {
             throw new OrderNotFoundException("Order does not exist: " + orderId);
         }
@@ -73,6 +100,14 @@ public class OrderService implements IOrderService {
     }
 
     private void persistWorkflowOrder(Order order) {
+        if (orderDao != null) {
+            if (order.getOrderId() > 0 && orderDao.findById(order.getOrderId()) != null) {
+                orderDao.update(order);
+            } else {
+                orderDao.insert(order);
+            }
+            return;
+        }
         int orderId = order.getOrderId();
         if (orderId > 0 && orders.contains(orderId)) {
             orders.update(order, Order::getOrderId);

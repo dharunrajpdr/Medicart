@@ -7,30 +7,41 @@ import java.util.Objects;
 
 public class CustomerService implements ICustomerService {
     private final InMemoryRepository<Customer> customers = new InMemoryRepository<>();
+    private final ICustomerDao customerDao;
     private final IPrescriptionService prescriptionService;
 
     public CustomerService() {
-        this(new PrescriptionService());
+        this(null, new PrescriptionService());
     }
 
     public CustomerService(IPrescriptionService prescriptionService) {
+        this(null, prescriptionService);
+    }
+
+    public CustomerService(ICustomerDao customerDao, IPrescriptionService prescriptionService) {
+        this.customerDao = customerDao;
         this.prescriptionService = Objects.requireNonNull(
                 prescriptionService, "prescriptionService cannot be null");
     }
 
     @Override
     public Customer getCustomerById(int customerId) {
-        return customers.get(customerId);
+        return customerDao == null
+                ? customers.get(customerId) : customerDao.findById(customerId);
     }
 
     @Override
     public List<Customer> getAllCustomers() {
-        return customers.getAll();
+        return customerDao == null ? customers.getAll() : customerDao.findAll();
     }
 
     @Override
     public synchronized void addCustomer(Customer customer) {
         validateCustomer(customer);
+        if (customerDao != null) {
+            customerDao.insert(customer);
+            return;
+        }
         ensureEmailAvailable(customer, 0);
         customers.add(customer, Customer::getCustomerId, Customer::setCustomerId);
     }
@@ -38,6 +49,10 @@ public class CustomerService implements ICustomerService {
     @Override
     public synchronized void updateCustomer(Customer customer) {
         validateCustomer(customer);
+        if (customerDao != null) {
+            customerDao.update(customer);
+            return;
+        }
         if (!customers.contains(customer.getCustomerId())) {
             throw new IllegalArgumentException(
                     "Customer does not exist: " + customer.getCustomerId());
@@ -48,6 +63,16 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public synchronized void deleteCustomer(int customerId) {
+        if (customerDao != null) {
+            if (customerDao.findById(customerId) == null) {
+                throw new IllegalArgumentException("Customer does not exist: " + customerId);
+            }
+            if (customerDao.hasOrdersOrPrescriptions(customerId)) {
+                throw new IllegalStateException("Customer has related orders or prescriptions");
+            }
+            customerDao.delete(customerId);
+            return;
+        }
         Customer customer = customers.get(customerId);
         if (customer == null) {
             throw new IllegalArgumentException("Customer does not exist: " + customerId);
@@ -62,7 +87,7 @@ public class CustomerService implements ICustomerService {
     public synchronized void uploadPrescription(Customer customer, Prescription prescription) {
         Objects.requireNonNull(customer, "customer cannot be null");
         Objects.requireNonNull(prescription, "prescription cannot be null");
-        Customer storedCustomer = customers.get(customer.getCustomerId());
+        Customer storedCustomer = getCustomerById(customer.getCustomerId());
         if (storedCustomer == null) {
             throw new IllegalArgumentException("Customer does not exist: " + customer.getCustomerId());
         }

@@ -6,20 +6,33 @@ import java.util.Objects;
 
 public class StockService implements IStockService {
     private final InMemoryRepository<Stock> stocks = new InMemoryRepository<>();
+    private final IStockDao stockDao;
+
+    public StockService() {
+        this(null);
+    }
+
+    public StockService(IStockDao stockDao) {
+        this.stockDao = stockDao;
+    }
 
     @Override
     public Stock getStockById(int stockId) {
-        return stocks.get(stockId);
+        return stockDao == null ? stocks.get(stockId) : stockDao.findById(stockId);
     }
 
     @Override
     public List<Stock> getAllStocks() {
-        return stocks.getAll();
+        return stockDao == null ? stocks.getAll() : stockDao.findAll();
     }
 
     @Override
     public synchronized void addStock(Stock stock) {
         validateStock(stock);
+        if (stockDao != null) {
+            stockDao.insert(stock);
+            return;
+        }
         ensureMedicineWarehouseUnique(stock, 0);
         stocks.add(stock, Stock::getStockId, Stock::setStockId);
     }
@@ -27,6 +40,10 @@ public class StockService implements IStockService {
     @Override
     public synchronized void updateStock(Stock stock) {
         validateStock(stock);
+        if (stockDao != null) {
+            stockDao.update(stock);
+            return;
+        }
         if (!stocks.contains(stock.getStockId())) {
             throw new IllegalArgumentException("Stock does not exist: " + stock.getStockId());
         }
@@ -36,6 +53,13 @@ public class StockService implements IStockService {
 
     @Override
     public synchronized void deleteStock(int stockId) {
+        if (stockDao != null) {
+            if (stockDao.findById(stockId) == null) {
+                throw new IllegalArgumentException("Stock does not exist: " + stockId);
+            }
+            stockDao.delete(stockId);
+            return;
+        }
         if (!stocks.delete(stockId)) {
             throw new IllegalArgumentException("Stock does not exist: " + stockId);
         }
