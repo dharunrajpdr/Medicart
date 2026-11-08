@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS OrderItem;
 DROP TABLE IF EXISTS `Order`;
 DROP TABLE IF EXISTS Prescription;
 DROP TABLE IF EXISTS Stock;
@@ -72,8 +73,24 @@ CREATE TABLE `Order` (
     CONSTRAINT chk_order_status CHECK (Status IN ('Placed', 'Pending Verification', 'Shipped', 'Cancelled', 'Completed'))
 ) ENGINE=InnoDB;
 
+CREATE TABLE OrderItem (
+    OrderID INT NOT NULL,
+    ItemNumber INT NOT NULL,
+    MedicineID INT NOT NULL,
+    PrescriptionID INT NULL,
+    PRIMARY KEY (OrderID, ItemNumber),
+    CONSTRAINT fk_order_item_order FOREIGN KEY (OrderID)
+        REFERENCES `Order`(OrderID) ON DELETE CASCADE,
+    CONSTRAINT fk_order_item_medicine FOREIGN KEY (MedicineID)
+        REFERENCES Medicine(MedicineID),
+    CONSTRAINT fk_order_item_prescription FOREIGN KEY (PrescriptionID)
+        REFERENCES Prescription(PrescriptionID),
+    CONSTRAINT chk_order_item_number CHECK (ItemNumber > 0)
+) ENGINE=InnoDB;
+
 CREATE INDEX idx_medicine_warehouse ON Medicine(WarehouseID);
 CREATE INDEX idx_stock_warehouse ON Stock(WarehouseID);
 CREATE INDEX idx_prescription_customer ON Prescription(CustomerID);
 CREATE INDEX idx_order_customer ON `Order`(CustomerID);
 CREATE INDEX idx_order_prescription ON `Order`(PrescriptionID);
+CREATE INDEX idx_order_item_medicine ON OrderItem(MedicineID);

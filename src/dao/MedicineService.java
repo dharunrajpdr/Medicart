@@ -14,22 +14,36 @@ import java.util.Objects;
 
 public class MedicineService implements IMedicineService {
     private final InMemoryRepository<Medicine> medicines = new InMemoryRepository<>();
+    private final IMedicineDao medicineDao;
+
+    public MedicineService() {
+        this(null);
+    }
+
+    public MedicineService(IMedicineDao medicineDao) {
+        this.medicineDao = medicineDao;
+    }
 
     @Override
     public Medicine getMedicineById(int medicineId) {
-        return medicines.get(medicineId);
+        return medicineDao == null
+                ? medicines.get(medicineId) : medicineDao.findById(medicineId);
     }
 
     @Override
     public List<Medicine> getAllMedicines() {
-        return medicines.getAll();
+        return medicineDao == null ? medicines.getAll() : medicineDao.findAll();
     }
 
     @Override
     public synchronized void addMedicine(Medicine medicine) throws InvalidMedicineDataException {
         validateMedicine(medicine);
         try {
-            medicines.add(medicine, Medicine::getMedicineId, Medicine::setMedicineId);
+            if (medicineDao == null) {
+                medicines.add(medicine, Medicine::getMedicineId, Medicine::setMedicineId);
+            } else {
+                medicineDao.insert(medicine);
+            }
         } catch (RuntimeException exception) {
             throw new InvalidMedicineDataException("Unable to add medicine", exception);
         }
@@ -39,7 +53,11 @@ public class MedicineService implements IMedicineService {
     public synchronized void updateMedicine(Medicine medicine) throws InvalidMedicineDataException {
         validateMedicine(medicine);
         try {
-            medicines.update(medicine, Medicine::getMedicineId);
+            if (medicineDao == null) {
+                medicines.update(medicine, Medicine::getMedicineId);
+            } else {
+                medicineDao.update(medicine);
+            }
         } catch (RuntimeException exception) {
             throw new InvalidMedicineDataException("Unable to update medicine", exception);
         }
@@ -47,6 +65,13 @@ public class MedicineService implements IMedicineService {
 
     @Override
     public synchronized void deleteMedicine(int medicineId) {
+        if (medicineDao != null) {
+            if (medicineDao.findById(medicineId) == null) {
+                throw new IllegalArgumentException("Medicine does not exist: " + medicineId);
+            }
+            medicineDao.delete(medicineId);
+            return;
+        }
         if (!medicines.delete(medicineId)) {
             throw new IllegalArgumentException("Medicine does not exist: " + medicineId);
         }
