@@ -35,6 +35,7 @@ import java.util.Scanner;
 
 public class MediCartApplication {
     private final Scanner scanner;
+    private final boolean databaseMode;
     private final ICustomerService customerService;
     private final IMedicineService medicineService;
     private final IWarehouseService warehouseService;
@@ -56,7 +57,8 @@ public class MediCartApplication {
         IPrescriptionService resolvedPrescriptionService;
         IOrderService resolvedOrderService;
 
-        if (jdbcAvailable() && databasePropertiesPresent()) {
+        boolean configuredDatabaseMode = jdbcAvailable() && databasePropertiesPresent();
+        if (configuredDatabaseMode) {
             try {
                 JdbcServiceFactory factory = new JdbcServiceFactory(new DatabaseContext());
                 resolvedCustomerService = factory.getCustomerService();
@@ -66,6 +68,7 @@ public class MediCartApplication {
                 resolvedPrescriptionService = factory.getPrescriptionService();
                 resolvedOrderService = factory.getOrderService();
             } catch (RuntimeException exception) {
+                configuredDatabaseMode = false;
                 resolvedCustomerService = new CustomerService();
                 resolvedMedicineService = new MedicineService();
                 resolvedWarehouseService = new WarehouseService();
@@ -82,6 +85,7 @@ public class MediCartApplication {
             resolvedOrderService = new OrderService();
         }
 
+        this.databaseMode = configuredDatabaseMode;
         this.customerService = resolvedCustomerService;
         this.medicineService = resolvedMedicineService;
         this.warehouseService = resolvedWarehouseService;
@@ -89,10 +93,19 @@ public class MediCartApplication {
         this.prescriptionService = resolvedPrescriptionService;
         this.orderService = resolvedOrderService;
 
-        seedStarterData();
+        if (databaseMode) {
+            System.out.println("MediCart is running with JDBC/MySQL persistence.");
+        } else {
+            System.out.println("MediCart is running in in-memory demo mode.");
+            seedStarterData();
+        }
     }
 
     public void run() {
+        System.out.println("Welcome to MediCart. " + (databaseMode
+                ? "Database-backed mode is active."
+                : "Demo mode is active."));
+
         boolean running = true;
         while (running) {
             printMenu();
