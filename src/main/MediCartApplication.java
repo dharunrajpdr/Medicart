@@ -22,6 +22,7 @@ import entity.model.Prescription;
 import entity.model.PrescriptionMedicine;
 import entity.model.Stock;
 import entity.model.Warehouse;
+import exception.InvalidMedicineDataException;
 import exception.PrescriptionRequiredException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -145,7 +146,7 @@ public class MediCartApplication {
                         break;
                 }
             } catch (Exception exception) {
-                System.out.println("Operation failed: " + exception.getMessage());
+                System.out.println("Operation failed: " + rootCauseMessage(exception));
             }
 
             if (running) {
@@ -199,7 +200,18 @@ public class MediCartApplication {
         }
     }
 
-    private void addMedicine() {
+    private void addMedicine() throws InvalidMedicineDataException {
+        List<Warehouse> warehouses = warehouseService.getAllWarehouses();
+        if (warehouses.isEmpty()) {
+            System.out.println("No warehouses exist. Add a warehouse first using option 5.");
+            return;
+        }
+        System.out.println("Available warehouses:");
+        for (Warehouse warehouse : warehouses) {
+            System.out.println("- " + warehouse.getWarehouseId() + ": "
+                    + warehouse.getWarehouseName() + " (" + warehouse.getCity() + ")");
+        }
+
         System.out.print("Medicine name: ");
         String name = scanner.nextLine().trim();
         System.out.print("Price: ");
@@ -208,6 +220,9 @@ public class MediCartApplication {
         int expiryDays = Integer.parseInt(scanner.nextLine().trim());
         System.out.print("Warehouse ID: ");
         int warehouseId = Integer.parseInt(scanner.nextLine().trim());
+        if (warehouseService.getWarehouseById(warehouseId) == null) {
+            throw new IllegalArgumentException("Warehouse does not exist: " + warehouseId);
+        }
         System.out.print("Type [otc/prescription]: ");
         String type = scanner.nextLine().trim().toLowerCase();
 
@@ -217,12 +232,8 @@ public class MediCartApplication {
                 : new OverTheCounterMedicine(0, name, price, LocalDate.now().plusDays(expiryDays),
                         warehouseId);
 
-        try {
-            medicineService.addMedicine(medicine);
-            System.out.println("Medicine added successfully with ID " + medicine.getMedicineId());
-        } catch (Exception exception) {
-            throw new IllegalArgumentException("Unable to add medicine: " + exception.getMessage(), exception);
-        }
+        medicineService.addMedicine(medicine);
+        System.out.println("Medicine added successfully with ID " + medicine.getMedicineId());
     }
 
     private void listMedicines() {
@@ -245,21 +256,48 @@ public class MediCartApplication {
         String name = scanner.nextLine().trim();
         System.out.print("Warehouse city: ");
         String city = scanner.nextLine().trim();
-        Warehouse warehouse = new Warehouse(0, name, city, new ArrayList<>());
-        warehouseService.addWarehouse(warehouse);
-
-        System.out.print("Medicine ID to stock: ");
-        int medicineId = Integer.parseInt(scanner.nextLine().trim());
-        Medicine medicine = medicineService.getMedicineById(medicineId);
-        if (medicine == null) {
-            throw new IllegalArgumentException("Medicine does not exist: " + medicineId);
+        List<Medicine> medicines = medicineService.getAllMedicines();
+        Medicine medicine = null;
+        int quantity = 0;
+        if (!medicines.isEmpty()) {
+            System.out.println("Available medicines:");
+            for (Medicine availableMedicine : medicines) {
+                System.out.println("- " + availableMedicine.getMedicineId() + ": "
+                        + availableMedicine.getName());
+            }
+            System.out.print("Medicine ID to stock now (0 to skip): ");
+            int medicineId = Integer.parseInt(scanner.nextLine().trim());
+            if (medicineId != 0) {
+                medicine = medicineService.getMedicineById(medicineId);
+                if (medicine == null) {
+                    throw new IllegalArgumentException("Medicine does not exist: " + medicineId);
+                }
+                System.out.print("Quantity available: ");
+                quantity = Integer.parseInt(scanner.nextLine().trim());
+            }
+        } else {
+            System.out.println("No medicines exist yet. The warehouse will be created without stock.");
         }
 
-        System.out.print("Quantity available: ");
-        int quantity = Integer.parseInt(scanner.nextLine().trim());
+        Warehouse warehouse = new Warehouse(0, name, city, new ArrayList<>());
+        warehouseService.addWarehouse(warehouse);
+        if (medicine == null) {
+            System.out.println("Warehouse created successfully with ID " + warehouse.getWarehouseId());
+            return;
+        }
+
         Stock stock = new Stock(0, medicine, warehouse, quantity);
         stockService.addStock(stock);
         System.out.println("Stock created successfully for warehouse " + warehouse.getWarehouseId());
+    }
+
+    private static String rootCauseMessage(Throwable exception) {
+        Throwable rootCause = exception;
+        while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+            rootCause = rootCause.getCause();
+        }
+        String message = rootCause.getMessage();
+        return message == null || message.isBlank() ? exception.getMessage() : message;
     }
 
     private void uploadPrescription() {
